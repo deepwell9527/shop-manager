@@ -1,0 +1,54 @@
+version: '3.8'
+services:
+  hyperf:
+    container_name: shop-manager-server-hyperf
+    build:
+      context: ./server-hyperf
+      dockerfile: Dockerfile-${DEPLOY_MODE}
+    restart: always
+    environment:
+      - TIMEZONE=${TIMEZONE}
+      - APP_SYSTEM=docker
+      - APP_ENV=${DEPLOY_MODE}
+      - DB_DRIVER=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=${MYSQL_DATABASE}
+      - DB_USERNAME=${MYSQL_USER}
+      - DB_PASSWORD=${MYSQL_PASSWORD}
+      - DB_CHARSET=utf8mb4
+      - DB_COLLATION=utf8mb4_unicode_ci
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    ports:
+      - "${HYPERF_PORT_9501}:9501"
+      - "${HYPERF_PORT_9502}:9502"
+      - "${HYPERF_PORT_9503}:9503"
+    volumes:
+      - ./server-hyperf:/home/shop-manager
+      - ./docker/php83/php.ini:/etc/php83/conf.d/99_overrides.ini
+    user: root
+    privileged: true
+    depends_on:
+      - mysql
+      - redis
+
+  mysql:
+    container_name: shop-manager-mysql
+    image: mysql:latest
+    ports:
+      - "${MYSQL_PORT_3306}:3306"
+    environment:
+      - TZ=${TIMEZONE}
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${MYSQL_DATABASE}
+      - MYSQL_USER=${MYSQL_USER}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    restart: always
+
+  redis:
+    container_name: shop-manager-redis
+    image: redis:latest
+    ports:
+      - "${REDIS_PORT_6379}:6379"
+    restart: always

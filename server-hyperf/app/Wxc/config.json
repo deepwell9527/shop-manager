@@ -1,0 +1,9 @@
+{
+    "name": "Wxc",
+    "label": "微信视频号",
+    "description": "微信视频号开放能力对接",
+    "installed": true,
+    "enabled": true,
+    "version": "1.0.0",
+    "order": 0
+}

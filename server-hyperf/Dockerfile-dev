@@ -1,0 +1,16 @@
+FROM hyperf/hyperf:8.3-alpine-v3.19-swoole-slim-v5
+LABEL maintainer="ZhangZhaoSheng <2114164829@qq.com>" version="1.0" license="MIT" app.name="ShopManager"
+
+RUN set -ex \
+    && php -v \
+    && php -m \
+    && php --ri swoole \
+    # - config timezone
+    && ln -sf /usr/share/zoneinfo/${TIMEZONE} /etc/localtime \
+    && echo "${TIMEZONE}" > /etc/timezone
+
+WORKDIR /home/shop-manager
+
+CMD ["php","watch","-c"]
+
+EXPOSE 9501 9502 9503

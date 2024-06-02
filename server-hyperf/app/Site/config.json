@@ -1,0 +1,9 @@
+{
+    "name": "Site",
+    "label": "租户模块",
+    "description": "核心、内置",
+    "installed": true,
+    "enabled": true,
+    "version": "1.0.0",
+    "order": 0
+}

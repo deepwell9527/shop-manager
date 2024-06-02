@@ -1,0 +1,9 @@
+{
+    "name": "OpenWechat",
+    "label": "微信平台模块",
+    "description": "微信平台开放接口对接",
+    "installed": true,
+    "enabled": false,
+    "version": "1.0.0",
+    "order": 0
+}

@@ -1,0 +1,67 @@
+FROM hyperf/hyperf:8.3-alpine-v3.19-swoole-slim-v5
+LABEL maintainer="Deepwell <2114164829@qq.com>" version="1.0" license="MIT" app.name="Bileishe"
+
+ARG workdir="/home/bileishe"
+ARG timezone
+ARG db_host
+ARG db_port
+ARG db_database
+ARG db_username
+ARG db_password
+ARG db_prefix
+ARG redis_host
+ARG redis_auth
+ARG redis_port
+ARG redis_db
+
+# update
+RUN set -ex \
+    && apk update \
+    && apk add zip unzip tzdata busybox-extras \
+    && php -v \
+    && php -m \
+    && php --ri swoole \
+    && cd /etc/php* \
+    && { \
+        echo "upload_max_filesize=32M"; \
+        echo "post_max_size=64M"; \
+        echo "memory_limit=128M"; \
+        echo "date.timezone=$timezone"; \
+        } | tee conf.d/99_overrides.ini \
+    && ln -sf /usr/share/zoneinfo/$timezone /etc/localtime \
+    && echo "$timezone" > /etc/timezone \
+    && rm -rf /var/cache/apk/* /tmp/* /usr/share/man
+
+WORKDIR $workdir
+
+EXPOSE 59501
+EXPOSE 59502
+
+COPY . $workdir
+
+RUN set -ex \
+    && composer install --no-dev -o  \
+    && php bin/hyperf.php \
+    && { \
+        echo "APP_NAME=chatting"; \
+        echo "APP_ENV=dev"; \
+        echo "DB_DRIVER=mysql"; \
+        echo "DB_HOST=$db_host"; \
+        echo "DB_PORT=$db_port"; \
+        echo "DB_DATABASE=$db_database"; \
+        echo "DB_USERNAME=$db_username"; \
+        echo "DB_PASSWORD=$db_password"; \
+        echo "DB_CHARSET=utf8mb4"; \
+        echo "DB_COLLATION=utf8mb4_unicode_ci"; \
+        echo "DB_PREFIX=$db_prefix"; \
+        echo "REDIS_HOST=$redis_host"; \
+        echo "REDIS_AUTH=$redis_auth"; \
+        echo "REDIS_PORT=$redis_port"; \
+        echo "REDIS_DB=$redis_db"; \
+        echo "CONFIG_CENTER_ENABLE=(false)"; \
+    } | tee .env
+#    && php bin/hyperf.php gen:jwt-secret \
+#    && php bin/hyperf.php gen:jwt-keypair
+
+
+ENTRYPOINT ["php", "bin/hyperf.php", "start"]
