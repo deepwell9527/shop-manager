@@ -4,6 +4,7 @@ declare(strict_types=1);
 namespace Deepwell\ChannelsShop\Api\Order\Dto;
 
 use Deepwell\Data\Data;
+use Hyperf\Collection\Collection;
 
 class OrderDetail extends Data
 {
@@ -56,9 +57,9 @@ class OrderDetail extends Data
 
     /**
      * 分享员信息
-     * @var SkuSharerInfo[]
+     * @var Collection<int,SkuSharerInfo>
      */
-    public array $sku_sharer_infos;
+    public Collection $sku_sharer_infos;
 
     /**
      * 授权账号信息

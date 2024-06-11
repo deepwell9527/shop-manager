@@ -90,13 +90,13 @@ class WxcSharerMapper extends AbstractMapper
             );
         }
 
-        // parent_sharer_id
-        if (!empty($params['parent_sharer_id'])) {
+        // pid
+        if (!empty($params['pid'])) {
             $query->whereExists(function ($query) use ($params) {
                 $query->select('sharer_id')
                     ->from('wxc_sharer_spec')
                     ->whereRaw('sharer_id = wxc_sharer.sharer_id')
-                    ->where('parent_sharer_id', $params['parent_sharer_id']);
+                    ->where('pid', $params['pid']);
             });
         }
 

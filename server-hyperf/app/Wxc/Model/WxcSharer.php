@@ -61,6 +61,6 @@ class WxcSharer extends MineModel
 
     public function parent()
     {
-        return $this->hasOneThrough(WxcSharer::class, WxcSharerSpec::class, 'sharer_id', 'sharer_id', 'sharer_id', 'parent_sharer_id');
+        return $this->hasOneThrough(WxcSharer::class, WxcSharerSpec::class, 'sharer_id', 'sharer_id', 'sharer_id', 'pid');
     }
 }

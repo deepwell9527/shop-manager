@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace App\Wxc\Service;
 
+use App\Wxc\Enums\RateMode;
 use App\Wxc\Mapper\WxcOrderMapper;
 use App\Wxc\Model\WxcOrder;
 use App\Wxc\Model\WxcOrderDeliveryInfo;
@@ -11,19 +12,26 @@ use App\Wxc\Model\WxcOrderPayInfo;
 use App\Wxc\Model\WxcOrderPriceInfo;
 use App\Wxc\Model\WxcOrderProductInfo;
 use App\Wxc\Model\WxcOrderSharerInfo;
+use App\Wxc\Service\Input\GetProductInput;
+use App\Wxc\Service\Input\GetSharerInput;
 use App\Wxc\Service\Input\SaveOrderDetailInput;
+use Deepwell\Concern\QueryService;
 use Mine\Abstracts\AbstractService;
 use Mine\Annotation\Transaction;
+use throwable;
 
 /**
  * 订单服务类
  */
 class WxcOrderService extends AbstractService
 {
+    use QueryService;
+
     /**
      * @var WxcOrderMapper
      */
     public $mapper;
+    protected string $queryModelClassName = WxcOrder::class;
 
     public function __construct(WxcOrderMapper $mapper)
     {
@@ -116,7 +124,7 @@ class WxcOrderService extends AbstractService
             }
             $sharerInfo->fill($detail->sharer_info->toArray())->save();
         }
-        if (!empty($detail->sku_sharer_infos)) {
+        if ($detail->sku_sharer_infos->isNotEmpty()) {
             foreach ($detail->sku_sharer_infos as $sItem) {
                 $sharerInfo = WxcOrderSharerInfo::where('order_id', $order->order_id)->where('sharer_openid', $sItem->sharer_openid)->where('sku_id', $sItem->sku_id)->first();
                 if (!$sharerInfo) {
@@ -127,6 +135,79 @@ class WxcOrderService extends AbstractService
                 $sharerInfo->fill($sItem->toArray())->save();
             }
         }
+    }
+
+    /**
+     * 确定分享员分佣金额
+     * <br>此时分账金额并不会直接入账（分享员佣金账户）
+     * @param WxcOrderSharerInfo $item 订单分享员信息
+     * @param WxcOrderProductInfo $orderProductInfo 订单商品信息
+     * @throws throwable
+     */
+    public function determineSharerProfit(WxcOrderSharerInfo $item, WxcOrderProductInfo $orderProductInfo): void
+    {
+        // 分账比例优先级
+        // 商品 > 身份等级 > 分享员自身
+
+        // 获取商品佣金信息
+        $getProduct = new GetProductInput();
+        $getProduct->product_id = $orderProductInfo->product_id;
+        $getProduct->with = ['spec'];
+        $product = container()->get(WxcProductService::class)->getOne($getProduct);
+
+        // 将分账比例信息缓存
+        $rateRules = [];
+
+        // 商品佣金比例
+        $productRate = 0;
+        if ($product->spec) {
+            $rateRules['product'] = [
+                'use_commission' => $product->spec->use_commission,
+                'commission_rate' => $product->spec->commission_rate,
+            ];
+            $productRate = $product->spec->commission_rate;
+        }
+
+        // 获取分享员信息
+        $getSharer = new GetSharerInput();
+        $getSharer->openid = $item->sharer_openid;
+        $sharer = container()->get(WxcSharerService::class)->getOne($getSharer);
+        if ($sharer->spec) {
+            // 自定义分佣比例
+            $rateRules['sharer'] = [
+                'rate_mode' => $sharer->spec->rate_mode,
+                'first_tier_rate' => $sharer->spec->first_tier_rate,
+                'sec_tier_rate' => $sharer->spec->sec_tier_rate,
+            ];
+            $customRate = $sharer->spec->first_tier_rate;
+
+            // 身份等级分佣比例
+            if ($sharer->spec->levelInfo) {
+                $rateRules['sharer']['level_info'] = [
+                    'level_id' => $sharer->spec->levelInfo->level_id,
+                    'title' => $sharer->spec->levelInfo->title,
+                    'first_tier_rate' => $sharer->spec->levelInfo->first_tier_rate,
+                    'sec_tier_rate' => $sharer->spec->levelInfo->sec_tier_rate,
+                ];
+                $levelRate = $sharer->spec->levelInfo->first_tier_rate;
+            }
+        }
+        $rate = match ($sharer->spec->rate_mode) {
+            RateMode::Default->value => $productRate ?? $levelRate ?? $customRate ?? 0,
+            RateMode::Custom->value => $customRate ?? $productRate ?? $levelRate ?? 0,
+            default => 0,
+        };
+
+        // 保存当前的各项分佣设置，以便复盘
+        $item->rate_rules = $rateRules;
+
+        if ($rate) {
+            // 分账金额
+            $amount = (int)floor($orderProductInfo->real_price * $rate / 100);
+            $item->amount = $amount;
+        }
+
+        $item->save();
     }
 
     public function sync()

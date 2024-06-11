@@ -10,6 +10,7 @@ use App\Wxc\Model\WxcSharer;
 use App\Wxc\Request\WxcSharerSaveRequest;
 use App\Wxc\Service\Input\SharerBindInput;
 use Deepwell\ChannelsShop\Api\Sharer\Request\BindRequest;
+use Deepwell\Concern\QueryService;
 use Mine\Abstracts\AbstractService;
 use Mine\Annotation\Transaction;
 
@@ -19,11 +20,13 @@ use Mine\Annotation\Transaction;
 class WxcSharerService extends AbstractService
 {
     use ManageChannelsShopApp;
+    use QueryService;
 
     /**
      * @var WxcSharerMapper
      */
     public $mapper;
+    protected string $queryModelClassName = WxcSharer::class;
 
     public function __construct(WxcSharerMapper $mapper)
     {
@@ -40,9 +43,7 @@ class WxcSharerService extends AbstractService
     public function sync()
     {
         $shopServ = container()->get(WxcShopService::class);
-        $shopConfList = $shopServ->getList([
-            'select' => 'app_id',
-        ]);
+        $shopConfList = $shopServ->getList(['select' => 'app_id',]);
 
         $queueServ = container()->get(WxcQueueService::class);
         $queueServ->setSite(get_current_site());
@@ -74,6 +75,7 @@ class WxcSharerService extends AbstractService
             } else {
                 $new = $data->toArray();
                 $new['sharer_id'] = $sharer->sharer_id;
+                $new['app_id'] = $sharer->app_id;
                 $res = $specMapper->save($new);
             }
             $results[$sharer->sharer_id] = boolval($res);

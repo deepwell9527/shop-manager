@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 namespace App\Wxc\Concern;
 
@@ -24,7 +25,7 @@ trait ManageChannelsShopApp
     public function initApplication(Config $config)
     {
         //$app = make(Application::class, [[]]);
-        $app  = container()->get(Application::class);
+        $app = container()->get(Application::class);
         $cache = container()->get(CacheInterface::class);
         $app->setCache($cache);
         $app->setConfig($config);

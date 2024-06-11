@@ -4,12 +4,14 @@ declare(strict_types=1);
 namespace App\Wxc\Service;
 
 use App\Wxc\Mapper\WxcSharerLevelMapper;
+use App\Wxc\Model\WxcSharerLevel;
 use App\Wxc\Request\WxcSharerLevelSaveRequest;
+use Deepwell\Concern\QueryService;
 use Exception;
 use Mine\Abstracts\AbstractService;
 
 /**
- * 等级设置服务类
+ * 分享员身份等级服务
  */
 class WxcSharerLevelService extends AbstractService
 {
@@ -17,6 +19,7 @@ class WxcSharerLevelService extends AbstractService
      * @var WxcSharerLevelMapper
      */
     public $mapper;
+
 
     public function __construct(WxcSharerLevelMapper $mapper)
     {

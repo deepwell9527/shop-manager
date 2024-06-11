@@ -97,9 +97,9 @@ class Product extends Data
 
     /**
      * 商品属性数组
-     * @var SkuAttr[]
+     * @var Collection<int,SkuAttr>
      */
-    public array $attrs;
+    public Collection $attrs;
 
     /**
      * 商品编码

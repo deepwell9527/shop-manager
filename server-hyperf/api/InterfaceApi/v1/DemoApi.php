@@ -10,10 +10,10 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-namespace Api\InterfaceApi\v1;
+namespace Api\InterfaceApi\V1;
 
-use Api\Request\v1\DemoApiRequest;
-use Api\Request\v1\UserInfoRequest;
+use Api\Request\V1\DemoApiRequest;
+use Api\Request\V1\UserInfoRequest;
 use App\System\Mapper\SystemDeptMapper;
 use App\System\Mapper\SystemUserMapper;
 use Mine\Annotation\Api\MApi;

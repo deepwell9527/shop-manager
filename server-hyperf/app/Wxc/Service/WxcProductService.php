@@ -8,6 +8,7 @@ use App\Wxc\Mapper\WxcProductMapper;
 use App\Wxc\Model\WxcProduct;
 use App\Wxc\Model\WxcProductSpec;
 use App\Wxc\Request\WxcProductSaveRequest;
+use Deepwell\Concern\QueryService;
 use Mine\Abstracts\AbstractService;
 use Mine\Annotation\Transaction;
 
@@ -17,11 +18,14 @@ use Mine\Annotation\Transaction;
 class WxcProductService extends AbstractService
 {
     use ManageChannelsShopApp;
+    use QueryService;
 
     /**
      * @var WxcProductMapper
      */
     public $mapper;
+
+    protected string $queryModelClassName = WxcProduct::class;
 
     public function __construct(WxcProductMapper $mapper)
     {

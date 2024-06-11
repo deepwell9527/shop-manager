@@ -88,6 +88,8 @@ class VerifyInterfaceMiddleware implements MiddlewareInterface
                         return MineCode::API_ACCESS_TOKEN_MISSING;
                     }
                     return $service->verifyNormalMode($queryParams['access_token'], $apiData);
+                case 100:
+                    return $this->authOfficialMiniProgram($request);
                 default:
                     throw new \RuntimeException();
             }

@@ -24,7 +24,7 @@ class WxcSharerSaveRequest extends Data
      * 分享员上级ID
      */
     #[Exists('wxc_sharer', 'sharer_id')]
-    public int|Optional $parent_sharer_id;
+    public int|Optional $pid;
 
     /**
      * 佣金比例模式

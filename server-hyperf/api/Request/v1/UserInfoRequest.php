@@ -10,7 +10,7 @@ declare(strict_types=1);
  * @license  https://github.com/mineadmin/MineAdmin/blob/master/LICENSE
  */
 
-namespace Api\Request\v1;
+namespace Api\Request\V1;
 
 use Hyperf\Validation\Request\FormRequest;
 

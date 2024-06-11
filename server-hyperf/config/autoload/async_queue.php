@@ -27,13 +27,13 @@ return [
         ],
         'max_messages' => 0,
     ],
-    // 微信视频号小店商品相关处理队列
-    'wxc_ec_product' => [
+    // 微信视频号小店默认队列
+    'wxc_common' => [
         'driver' => RedisDriver::class,
         'redis' => [
             'pool' => 'default'
         ],
-        'channel' => '{queue:wxc_ec_product}',
+        'channel' => '{queue:wxc_common}',
         'timeout' => 2,
         'retry_seconds' => 5,
         'handle_timeout' => 10,
